@@ -1,19 +1,17 @@
 #ifndef BARCONDH
 #define BARCONDH
 
-#include <vector>
-#include <thread>
 #include <mutex>
 #include <condition_variable>
 
-namespace BarrierCond{
+namespace barrier{
 
 typedef int barrier_cond_type;
 
 const barrier_cond_type MASTER = 0;
 const barrier_cond_type SLAVE  = 1;
 
-class BarrierCond{
+class Barrier{
   private:
     int threadnum;
     int remain;
@@ -21,10 +19,10 @@ class BarrierCond{
     std::condition_variable cv;
     std::mutex mtx;
   public:
-    BarrierCond(int n=0, bool blk=true):
+    Barrier(int n=0, bool blk=true):
       threadnum(n),blocking(blk),
       remain(n), cv(), mtx() {}
-    ~BarrierCond(){};
+    ~Barrier(){};
 
     // blocking
     void BarrierBlocking();
@@ -33,7 +31,7 @@ class BarrierCond{
     bool BarrierNonBlocking(barrier_cond_type bct);
 };
 
-void BarrierCond::BarrierBlocking(){
+void Barrier::BarrierBlocking(){
   std::unique_lock<std::mutex> ulk(mtx);
   remain--;
   if(remain == 0){
@@ -46,7 +44,7 @@ void BarrierCond::BarrierBlocking(){
   ulk.unlock();
 }
 
-bool BarrierCond::BarrierNonBlocking(barrier_cond_type bct){
+bool Barrier::BarrierNonBlocking(barrier_cond_type bct){
   // put here to work even if optimizing takes place
   mtx.lock();
   if(bct == MASTER){

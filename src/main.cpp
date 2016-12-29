@@ -2,9 +2,9 @@
 #include <thread>
 #include <vector>
 #include <chrono>
-#include "barrier_cond.hpp"
+#include "barrier.hpp"
 
-void runblocking(BarrierCond::BarrierCond* bc){
+void runblocking(barrier::Barrier* bc){
   std::cout << std::this_thread::get_id() << " enter blocking barrier" << std::endl;
   bc->BarrierBlocking();
   std::cout << std::this_thread::get_id() << " leave blocking barrier" << std::endl;
@@ -12,7 +12,7 @@ void runblocking(BarrierCond::BarrierCond* bc){
 
 void blockingtest(int thnum){
   std::vector<std::thread> threads;
-  BarrierCond::BarrierCond bc(thnum+1);
+  barrier::Barrier bc(thnum+1);
 
   for(int i=0; i<thnum; i++){
     threads.push_back(std::thread(runblocking, &bc));
@@ -27,11 +27,11 @@ void blockingtest(int thnum){
     threads[i].join();
   }
 }
-void runnonblocking(BarrierCond::BarrierCond* bc){
+void runnonblocking(barrier::Barrier* bc){
   std::cout << std::this_thread::get_id() << " enter blocking barrier" << std::endl;
   while(true){
 
-    if(bc->BarrierNonBlocking(BarrierCond::SLAVE)){
+    if(bc->BarrierNonBlocking(barrier::SLAVE)){
       break;
     }
   }
@@ -40,7 +40,7 @@ void runnonblocking(BarrierCond::BarrierCond* bc){
 
 void nonblockingtest(int thnum){
   std::vector<std::thread> threads;
-  BarrierCond::BarrierCond bc(thnum+1, false);
+  barrier::Barrier bc(thnum+1, false);
 
   for(int i=0; i<thnum; i++){
     threads.push_back(std::thread(runnonblocking, &bc));
@@ -50,7 +50,7 @@ void nonblockingtest(int thnum){
   std::this_thread::sleep_for(std::chrono::seconds(1));
   std::cout << std::this_thread::get_id() << " wake up" << std::endl;
 
-  bc.BarrierNonBlocking(BarrierCond::MASTER);
+  bc.BarrierNonBlocking(barrier::MASTER);
   for(int i=0; i<thnum; i++){
     threads[i].join();
   }
